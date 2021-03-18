@@ -1,0 +1,10 @@
+.window {
+    margin: 0 20px;
+    border: 3px dashed gray;
+    padding: 30px;
+    width: 400px;
+}
+
+.root {
+    margin-top: 10px;
+}
