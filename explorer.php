@@ -9,24 +9,21 @@ function delDir($dir) {
     header("location: /admin2/?dir=$dir");   // Выполняется перевод на текущую директорию
 }
 
+
 $dir = $_GET['dir'] ?? '.\\';   // Если 'dir' существует, то принимает 'dir', иначе \
 $dir = realpath($dir);   // Абсолютный путь к файлу
 chdir($dir);   // Изменяет текущий каталог на указанный
 $curDir = getcwd();   // Получает имя текущего каталога
 $arHere = scandir($curDir);   // Получает список файлов и каталогов, расположенных по указанному пути
 
-// echo __FILE__.'<br>';
-// echo $_SERVER['PHP_SELF'];
-// echo preg_match('/\/explorer\.php$/', $_SERVER['PHP_SELF']); 
 
 if (preg_match('/\/explorer\.php$/', $_SERVER['PHP_SELF']) == 1) {   // Если в адресной строке есть explorer.php
     header('location: /admin2/index.php');   // Выполняется перевод на index.php
 }
 
-// $rename = $_GET['rename'] ?? false;   // Если 'rename' существует, то принимает 'rename', иначе false
-// $rename = $dir.'\\'.$rename;   // Присваивание пути
 
 $formats = 'php|html|txt|js|css';
+
 
 if (isset($_GET['rename'])) {   // Если GET 'rename' существует
     echo '<form method="POST" class="formNewName"><input type="text" name="rename"><button>Ok</button></form>';   // Вызов формы для нового имени
@@ -37,6 +34,7 @@ if (isset($_GET['rename'])) {   // Если GET 'rename' существует
         header("location: /admin2/?dir=$dir");   // Выполняется перевод на текущую директорию
     }
 }
+
 
 if (isset($_GET['delete'])) {
     echo '<div class="formDelete">Удалить? <form method="POST"><input type="hidden" name="deleteYes"><button>Да</button></form> <form><input type="hidden" name="deleteNo"><button>Нет</button></form></div>';   // Вызов формы: Удалить? ДА НЕТ
@@ -50,6 +48,42 @@ if (isset($_GET['delete'])) {
     }
 }
 
+
+if(isset($_POST['type']) && isset($_POST['newWay'])) {
+    $newWay = $_POST['newWay'];
+    if (preg_match('/^[a-zа-яё0-9 -_]+(\.('.$formats.'))?$/ui', $newWay)) {   // Если проходит проверку
+        $newWay = $dir.'\\'.$newWay;   // Присваивание пути
+        $type = $_POST['type'];
+        if ($type == 'dir') {
+            $i = 2;
+            $empty = $newWay;
+            while (file_exists($newWay)) {   // Если существует
+                $newWay = $empty;   // Убрать цифру
+                $newWay = $newWay.'_'.$i;   // Добавить цифру
+                $i++;
+            }
+            mkdir($newWay);
+            header("location: /admin2/?dir=$dir");
+        }
+        else if ($type == 'file') {
+            $i = 2;
+            $empty = $newWay;
+            while (file_exists($newWay)) {   // Если существует
+                $newWay = $empty;   // Убрать цифру
+                $index = strripos($newWay, '.');   // Имя файла до '.'
+                if ($index !== false) {
+                    $newWay = substr($newWay, 0, $index)."_$i".substr($newWay, $index);   // Имя файла, порядковый номер, расширение
+                }
+                else $newWay .= "_$i";
+                $i++;
+            }
+            $fb = fopen($newWay, "w");   // Открывает файл. W - только для записи
+            fclose($fb);
+            header("location: /admin2/?dir=$dir");
+        }
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -58,7 +92,7 @@ if (isset($_GET['delete'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/admin2/style2.css">
+    <link rel="stylesheet" href="/admin2/style.css">
 </head>
 <body>
 
@@ -72,7 +106,7 @@ if (isset($_GET['delete'])) {
 
         <?php } else { if (is_dir($path)) { ?>
 
-            <p class="string dirString"><a href="/admin2/?dir=<?= $dir . '\\' . $path; ?>"><?= $path; ?></a>   <!-- Формируется список -->
+            <p class="string dirString"><a href="/admin2/?dir=<?= $dir.'\\'.$path; ?>"><?= $path; ?></a>   <!-- Формируется список папок -->
 
             <span class="rename"><a href="/admin2/?dir=<?= $dir; ?>&rename=<?= $path; ?>">Переименовать</a></span>
         
@@ -80,7 +114,9 @@ if (isset($_GET['delete'])) {
 
         <?php } else { ?>
 
-            <p class="string"><a><?= $path; ?></a>   <!-- Формируется список -->
+            <p class="string"><a><?= $path; ?></a>   <!-- Формируется список файлов -->
+
+            <?php if ($path == 'index.php' || $path == 'explorer.php' || $path == 'style.css') continue; ?>   <!-- Запрещает трогать эти файлы -->
 
             <span class="rename"><a href="/admin2/?dir=<?= $dir; ?>&rename=<?= $path; ?>">Переименовать</a></span>
             
@@ -91,8 +127,10 @@ if (isset($_GET['delete'])) {
 <p class="root"><a href="/admin2/">Корень</a></p>
 
 <form method="POST">
-Новый файл <input type="text" name="newFile">
-<i
+Новый файл <input type="text" name="newWay">
+Файл <input type="radio" name="type" value="file">
+Папка<input type="radio" name="type" value="dir">
+<button>Создать</button>
 </form>
 
 </div>

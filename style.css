@@ -31,11 +31,8 @@ a:visited {
 }
 
 .formDelete form {
+    margin: 0;
     margin-left: 40px;
-}
-
-.formDelete form input {
-    width: 0;
 }
 
 .back {
@@ -43,7 +40,7 @@ a:visited {
 }
 
 .string {
-    border: 1px solid red;
+    margin-left: 20px;
 }
 
 .rename {
