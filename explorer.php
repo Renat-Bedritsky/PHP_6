@@ -1,5 +1,14 @@
 <?php 
 
+function removeDir($path) {
+    if (is_file($path)) {
+      @unlink($path);
+    } else {
+        array_map('removeDir',glob('/*')) == @rmdir($path);
+    }
+    @rmdir($path);
+}
+
 $dir = $_GET['dir'] ?? '.\\';   // Если 'dir' существует, то принимает 'dir', иначе \
 $dir = realpath($dir);   // Абсолютный путь к файлу
 chdir($dir);   // Изменяет текущий каталог на указанный
@@ -12,6 +21,34 @@ $arHere = scandir($curDir);   // Получает список файлов и �
 
 if (preg_match('/\/explorer\.php$/', $_SERVER['PHP_SELF']) == 1) {   // Если в адресной строке есть explorer.php
     header('location: /admin2/index.php');   // Выполняется перевод на index.php
+}
+
+// $rename = $_GET['rename'] ?? false;   // Если 'rename' существует, то принимает 'rename', иначе false
+// $rename = $dir.'\\'.$rename;   // Присваивание пути
+
+$formats = 'php|html|txt|js|css';
+
+if (isset($_GET['rename'])) {   // Если GET 'rename' существует
+    echo '<form method="POST" class="formNewName"><input type="text" name="rename"><button>Ok</button></form>';   // Вызов формы для нового имени
+    if (isset($_POST['rename'])) {   // Если POST 'rename' существует
+        if (preg_match('/^[a-zа-яё0-9 -_]+(\.('.$formats.'))?$/ui', $_POST['rename'])) {   // Если проходит проверку
+            rename($_GET['rename'], $dir.'\\'.$_POST['rename']);   // Переименование (старое имя, новое имя)
+        }
+        header("location: /admin2/?dir=$dir");   // Выполняется перевод на текущую директорию
+    }
+}
+
+if (isset($_GET['delete'])) {
+    echo '<div class="formDelete">Удалить? <form method="POST"><input type="hidden" name="deleteYes"><button>Да</button></form> <form><input type="hidden" name="deleteNo"><button>Нет</button></form></div>';
+    $deleteDir = $dir.'\\'.$_GET['delete'];
+    if (isset($_POST['deleteYes'])) {
+        removeDir($delete);
+        // if ($_GET['type'] == 'dir') removeDir($deleteDir);
+        // else unlink($_GET['delete']);
+        // if (isset($_GET['delete'])) {
+            header("location: /admin2/?dir=$dir");
+        //}
+    }
 }
 
 ?>
@@ -32,29 +69,29 @@ if (preg_match('/\/explorer\.php$/', $_SERVER['PHP_SELF']) == 1) {   // Если
     if ($path == '.') continue;
         if ($path == '..') { ?>
 
-            <a href="/admin2/index.php/?dir=<?= $dir.'\\'.$path; ?>">Назад</a><br>
+            <p class="back"><a href="/admin2/index.php/?dir=<?= $dir.'\\'.$path; ?>">Назад</a><p>
 
         <?php } else { if (is_dir($path)) { ?>
 
-            <a href="/admin2/index.php/?dir=<?= $dir . '\\' . $path; ?>"><?= $path; ?></a>   <!-- Формируется список -->
+            <p class="string dirString"><a href="/admin2/?dir=<?= $dir . '\\' . $path; ?>"><?= $path; ?></a>   <!-- Формируется список -->
 
-            <a href="#">Переименовать</a>
+            <span class="rename"><a href="/admin2/?dir=<?= $dir; ?>&rename=<?= $path; ?>">Переименовать</a></span>
         
-            <a href="#">Удалить<a><br>
+            <span class="delete"><a href="/admin2/?dir=<?= $dir ?>&delete=<?= $path; ?>&type=dir">Удалить<a></p>
 
         <?php } else { ?>
 
-            <a><?= $path; ?></a>
+            <p class="string"><a><?= $path; ?></a>   <!-- Формируется список -->
 
-            <a href="#">Переименовать</a>
+            <span class="rename"><a href="/admin2/?dir=<?= $dir; ?>&rename=<?= $path; ?>">Переименовать</a></span>
             
-            <a href="#">Удалить<a><br>
+            <span class="delete"><a href="/admin2/?dir=<?= $dir ?>&delete=<?= $path; ?>&type=file">Удалить<a></span></p>
 
         <?php }}} ?>
 
-<p class="root"><a href="/admin2/index.php">Корень</a></p>
+<p class="root"><a href="/admin2/">Корень</a></p>
 
 </div>
-    
+
 </body>
 </html>
