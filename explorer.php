@@ -1,12 +1,12 @@
 <?php 
 
-function removeDir($path) {
-    if (is_file($path)) {
-      @unlink($path);
-    } else {
-        array_map('removeDir',glob('/*')) == @rmdir($path);
+function delDir($dir) {
+    $files = array_diff(scandir($dir), ['.','..']);   // Возвращает массив, полученный от $dir, кроме '.' и '..'
+    foreach ($files as $file) {
+        (is_dir($dir.'/'.$file)) ? delDir($dir.'/'.$file) : unlink($dir.'/'.$file);
     }
-    @rmdir($path);
+    rmdir($dir);   // Удаление директории
+    header("location: /admin2/?dir=$dir");   // Выполняется перевод на текущую директорию
 }
 
 $dir = $_GET['dir'] ?? '.\\';   // Если 'dir' существует, то принимает 'dir', иначе \
@@ -39,15 +39,14 @@ if (isset($_GET['rename'])) {   // Если GET 'rename' существует
 }
 
 if (isset($_GET['delete'])) {
-    echo '<div class="formDelete">Удалить? <form method="POST"><input type="hidden" name="deleteYes"><button>Да</button></form> <form><input type="hidden" name="deleteNo"><button>Нет</button></form></div>';
-    $deleteDir = $dir.'\\'.$_GET['delete'];
+    echo '<div class="formDelete">Удалить? <form method="POST"><input type="hidden" name="deleteYes"><button>Да</button></form> <form><input type="hidden" name="deleteNo"><button>Нет</button></form></div>';   // Вызов формы: Удалить? ДА НЕТ
+    $deleteDir = $dir.'\\'.$_GET['delete'];   // Присваивание пути
     if (isset($_POST['deleteYes'])) {
-        removeDir($delete);
-        // if ($_GET['type'] == 'dir') removeDir($deleteDir);
-        // else unlink($_GET['delete']);
-        // if (isset($_GET['delete'])) {
-            header("location: /admin2/?dir=$dir");
-        //}
+        if ($_GET['type'] == 'dir') delDir($deleteDir);   // Вызов функции
+        else unlink($_GET['delete']);   // Удаление файла
+        if (isset($_GET['delete'])) {
+            header("location: /admin2/?dir=$dir");   // Выполняется перевод на текущую директорию
+        }
     }
 }
 
@@ -59,7 +58,7 @@ if (isset($_GET['delete'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/admin2/style.css">
+    <link rel="stylesheet" href="/admin2/style2.css">
 </head>
 <body>
 
@@ -90,6 +89,11 @@ if (isset($_GET['delete'])) {
         <?php }}} ?>
 
 <p class="root"><a href="/admin2/">Корень</a></p>
+
+<form method="POST">
+Новый файл <input type="text" name="newFile">
+<i
+</form>
 
 </div>
 
