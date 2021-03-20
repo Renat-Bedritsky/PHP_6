@@ -24,6 +24,10 @@ if (preg_match('/\/explorer\.php$/', $_SERVER['PHP_SELF']) == 1) {   // Если
 
 $formats = 'php|html|txt|js|css';
 
+if (isset($_GET['edit'])) {
+    echo '<form method="POST" class="formEdit"><textarea rows="30" cols="80">eee</textarea></form>';
+}
+
 
 if (isset($_GET['rename'])) {   // Если GET 'rename' существует
     echo '<form method="POST" class="formNewName"><input type="text" name="rename"><button>Ok</button></form>';   // Вызов формы для нового имени
@@ -92,7 +96,7 @@ if(isset($_POST['type']) && isset($_POST['newWay'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/admin2/style.css">
+    <link rel="stylesheet" href="/admin2/style2.css">
 </head>
 <body>
 
@@ -117,6 +121,8 @@ if(isset($_POST['type']) && isset($_POST['newWay'])) {
             <p class="string"><a><?= $path; ?></a>   <!-- Формируется список файлов -->
 
             <?php if ($path == 'index.php' || $path == 'explorer.php' || $path == 'style.css') continue; ?>   <!-- Запрещает трогать эти файлы -->
+
+            <span class="edit"><a href="/admin2/?dir=<?= $dir; ?>&edit=<?= $path; ?>">Редактировать</a></span>
 
             <span class="rename"><a href="/admin2/?dir=<?= $dir; ?>&rename=<?= $path; ?>">Переименовать</a></span>
             
